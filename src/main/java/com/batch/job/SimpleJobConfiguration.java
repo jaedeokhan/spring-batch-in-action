@@ -18,7 +18,8 @@ import org.springframework.context.annotation.Configuration;
 public class SimpleJobConfiguration {
 
     private final String JOB_NAME = "simpleJob";
-    private final String STEP_NAME = "simpleStep1";
+    private final String STEP_NAME1 = "simpleStep1";
+    private final String STEP_NAME2 = "simpleStep2";
     private final JobBuilderFactory jobBuilderFactory;
     private final StepBuilderFactory stepBuilderFactory;
 
@@ -26,20 +27,30 @@ public class SimpleJobConfiguration {
     public Job simpleJob() {
         return jobBuilderFactory.get(JOB_NAME)
                 .start(simpleStep1(null))
+                .next(simpleStep2(null))
                 .build();
     }
+
 
     @Bean
     @JobScope
     public Step simpleStep1(@Value("#{jobParameters[requestDate]}") String requestDate) {
-        return stepBuilderFactory.get(STEP_NAME)
+        return stepBuilderFactory.get(STEP_NAME1)
                 .tasklet((contribution, chunkContext) -> {
-                   log.info(">>>>> This is Step1");
+                    log.info(">>>>> This is Step1");
                     log.info(">>>>> requestDate = {}", requestDate);
-                   return RepeatStatus.FINISHED;
+                    return RepeatStatus.FINISHED;
                 }).build();
     }
 
-
-
+    @Bean
+    @JobScope
+    public Step simpleStep2(@Value("#{jobParameters[requestDate]}") String requestDate) {
+        return stepBuilderFactory.get(STEP_NAME2)
+                .tasklet((contribution, chunkContext) -> {
+                    log.info(">>>>> This is Step2");
+                    log.info(">>>>> requestDate = {}", requestDate);
+                    return RepeatStatus.FINISHED;
+                }).build();
+    }
 }
